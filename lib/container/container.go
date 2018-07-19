@@ -4,34 +4,33 @@ import(
   "os"
   "fmt"
   "bufio"
+  "io/ioutil"
   "context"
   "github.com/docker/docker/api/types"
   "github.com/docker/docker/client"
 )
 
 const BUFSIZE = 1024
-
+//https://kuroeveryday.blogspot.com/2017/09/golang-build-image-with-dockerfile.html
 func Build(path string, image string){
   ctx := context.Background()
   cli, err := client.NewEnvClient()
-  tar, _ := os.Open("/tmp/tmp.tar")
+  tar, _ := os.Open("/tmp/Dockerfile.tar.gz")
   if err != nil {
 		panic(err)
 	}
-  dockerfile := readDockerfile(path)
+  //dockerfile := readDockerfile(path)
   buildOpt := types.ImageBuildOptions{
-        Dockerfile:     dockerfile,
-        SuppressOutput: true,
         PullParent:     true,
-        Tags:           []string{"latest"},
+        Tags:           []string{"lat:1"},
     }
   buildResponse, err := cli.ImageBuild(ctx, bufio.NewReader(tar), buildOpt)
   //containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
 	if err != nil {
 		panic(err)
 	}
-  fmt.Println(buildResponse)
-  fmt.Println(dockerfile)
+  b, err := ioutil.ReadAll(buildResponse.Body)
+  fmt.Println(string(b))
 }
 
 func readDockerfile(repoPath string) string{
