@@ -2,7 +2,7 @@ package builder
 
 import (
   "github.com/takutakahashi/k8s-docker-image-builder/lib/container"
-  "github.com/takutakahashi/k8s-docker-image-builder/lib/github"
+  "io"
   "time"
 )
 
@@ -19,8 +19,8 @@ func List() []string {
   return []string{"ready", "ready"}
 }
 
-func Build(repoName string, imageName string) string {
-  github.Clone(repoName)
-  container.Build(repoName, imageName)
-  return "ok"
+func Build(tar io.Reader, imageName string) string {
+  //github.Clone(repoName)
+  response := container.Build(tar, imageName)
+  return response
 }
