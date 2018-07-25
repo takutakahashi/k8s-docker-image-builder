@@ -25,12 +25,21 @@ func getTarFile(r *http.Request) io.Reader {
 }
 
 func Build(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-  response := builder.Build(getTarFile(r), p.ByName("image"))
-  fmt.Fprintf(w, "%q", response)
+  imageName := r.FormValue("image")
+  go builder.Build(getTarFile(r), imageName)
+  fmt.Fprintf(w, "%q", "reserved")
+}
+
+func Pull(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+ err := r.ParseMultipartForm(5 * 1024 * 1024)
+ image := r.FormValue("image")
+ check(err)
+ builder.Pull(image)
 }
 
 func main() {
   router := httprouter.New()
   router.POST("/build", Build)
+  router.POST("/pull", Pull)
   log.Fatal(http.ListenAndServe(":8080", router))
 }

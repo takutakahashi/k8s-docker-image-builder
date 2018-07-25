@@ -5,6 +5,11 @@ import (
   "io"
   "time"
 )
+func check(err error){
+  if err!= nil {
+    panic(err)
+  }
+}
 
 type BuildStatus struct {
   CreatedAt time.Time
@@ -23,4 +28,12 @@ func Build(tar io.Reader, imageName string) string {
   //github.Clone(repoName)
   response := container.Build(tar, imageName)
   return response
+}
+
+func Pull(image string){
+  container.Pull(image)
+}
+
+func Push(image string){
+  container.Push(image)
 }
