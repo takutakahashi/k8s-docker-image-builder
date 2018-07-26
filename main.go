@@ -2,8 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/labstack/echo"
 	"github.com/takutakahashi/k8s-docker-image-builder/lib/builder"
 	"io"
 	"log"
@@ -16,30 +15,40 @@ func check(err error) {
 	}
 }
 
-func getTarFile(r *http.Request) io.Reader {
-	err := r.ParseMultipartForm(5 * 1024 * 1024)
+func getTarFile(c echo.Context) io.Reader {
+	recievedFile, err := c.FormFile("file")
+	f, err := recievedFile.Open()
 	check(err)
-	recievedFile, _, err := r.FormFile("file")
-	check(err)
-	return bufio.NewReader(recievedFile)
+	return bufio.NewReader(f)
 }
 
-func Build(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	imageName := r.FormValue("image")
-	go builder.Build(getTarFile(r), imageName)
-	fmt.Fprintf(w, "%q", "reserved")
+func setResponseBase(c echo.Context) {
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusOK)
 }
 
-func Pull(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	err := r.ParseMultipartForm(5 * 1024 * 1024)
-	image := r.FormValue("image")
-	check(err)
+func build(c echo.Context) error {
+	imageName := c.FormValue("image")
+	go builder.Build(getTarFile(c), imageName)
+	return nil
+}
+
+//func Pull(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func pull(c echo.Context) error {
+	setResponseBase(c)
+	image := c.FormValue("image")
 	builder.Pull(image)
+	return nil
+}
+
+func route(e *echo.Echo) *echo.Echo {
+	e.POST("/pull", pull)
+	e.POST("/build", build)
+	return e
 }
 
 func main() {
-	router := httprouter.New()
-	router.POST("/build", Build)
-	router.POST("/pull", Pull)
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(route(echo.New()).Start(":8080"))
 }
+
+// check https://echo.labstack.com/cookbook/streaming-response
