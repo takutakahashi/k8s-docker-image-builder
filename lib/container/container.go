@@ -9,6 +9,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/labstack/echo"
 	"io"
 	"io/ioutil"
 	"os"
@@ -35,14 +36,14 @@ func Build(tar io.Reader, image string) string {
 	return string(b)
 }
 
-func Pull(image string) {
+func Pull(c echo.Context, image string) {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	auth := getEncodedAuthJSON(image)
 	pullOpt := types.ImagePullOptions{RegistryAuth: auth}
 	response, err := cli.ImagePull(ctx, image, pullOpt)
-	check(err)
 	b, err := ioutil.ReadAll(response)
+	check(err)
 	fmt.Printf("%q", string(b))
 }
 
@@ -53,7 +54,7 @@ func Push(image string) {
 	pushOpt := types.ImagePushOptions{RegistryAuth: auth}
 	response, err := cli.ImagePush(ctx, image, pushOpt)
 	check(err)
-	b, err := ioutil.ReadAll(response)
+	b, _ := ioutil.ReadAll(response)
 	fmt.Printf("%q", string(b))
 }
 
