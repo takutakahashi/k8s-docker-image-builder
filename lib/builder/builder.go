@@ -33,9 +33,9 @@ func List() []string {
 	return []string{"ready", "ready"}
 }
 
-func Build(tar io.Reader, imageName string) string {
+func Build(c echo.Context, tar io.Reader, imageName string) string {
 	//github.Clone(repoName)
-	response := container.Build(tar, imageName)
+	response := container.Build(c, tar, imageName)
 	return response
 }
 
@@ -43,6 +43,6 @@ func Pull(c echo.Context, image string) {
 	container.Pull(c, image)
 }
 
-func Push(image string) {
-	container.Push(image)
+func Push(c echo.Context, image string) {
+	container.Push(c, image)
 }

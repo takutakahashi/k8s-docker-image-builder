@@ -11,8 +11,8 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/labstack/echo"
 	"io"
-	"io/ioutil"
 	"os"
+	"time"
 )
 
 func check(err error) {
@@ -21,8 +21,20 @@ func check(err error) {
 	}
 }
 
+func streamResponseToClient(c echo.Context, r io.ReadCloser) {
+	for true {
+		n, _ := io.Copy(c.Response(), r)
+		fmt.Printf("%d", n)
+		if n == 0 {
+			break
+		}
+		c.Response().Flush()
+		time.Sleep(1)
+	}
+}
+
 //https://kuroeveryday.blogspot.com/2017/09/golang-build-image-with-dockerfile.html
-func Build(tar io.Reader, image string) string {
+func Build(c echo.Context, tar io.Reader, image string) string {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	buildOpt := types.ImageBuildOptions{
@@ -31,9 +43,8 @@ func Build(tar io.Reader, image string) string {
 	}
 	buildResponse, err := cli.ImageBuild(ctx, tar, buildOpt)
 	check(err)
-	b, err := ioutil.ReadAll(buildResponse.Body)
-	fmt.Printf("%q", string(b))
-	return string(b)
+	streamResponseToClient(c, buildResponse.Body)
+	return "ok"
 }
 
 func Pull(c echo.Context, image string) {
@@ -42,20 +53,18 @@ func Pull(c echo.Context, image string) {
 	auth := getEncodedAuthJSON(image)
 	pullOpt := types.ImagePullOptions{RegistryAuth: auth}
 	response, err := cli.ImagePull(ctx, image, pullOpt)
-	b, err := ioutil.ReadAll(response)
 	check(err)
-	fmt.Printf("%q", string(b))
+	streamResponseToClient(c, response)
 }
 
-func Push(image string) {
+func Push(c echo.Context, image string) {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	auth := getEncodedAuthJSON(image)
 	pushOpt := types.ImagePushOptions{RegistryAuth: auth}
 	response, err := cli.ImagePush(ctx, image, pushOpt)
 	check(err)
-	b, _ := ioutil.ReadAll(response)
-	fmt.Printf("%q", string(b))
+	streamResponseToClient(c, response)
 }
 
 func getEncodedAuthJSON(image string) string {
