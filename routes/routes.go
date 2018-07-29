@@ -19,7 +19,14 @@ func setResponseBase(c echo.Context) {
 
 func build(c echo.Context) error {
 	image := c.FormValue("image")
-	go builder.Build(builder.GetTarFile(c), image)
+	builder.Build(c, builder.GetTarFile(c), image)
+	return nil
+}
+
+func publish(c echo.Context) error {
+	image, repo := c.FormValue("image"), c.FormValue("repo")
+	builder.BuildFromRepo(c, repo, image)
+	builder.Push(c, image)
 	return nil
 }
 
@@ -33,7 +40,7 @@ func pull(c echo.Context) error {
 func push(c echo.Context) error {
 	setResponseBase(c)
 	image := c.FormValue("image")
-	builder.Push(image)
+	builder.Push(c, image)
 	return nil
 }
 
@@ -41,5 +48,6 @@ func Route(e *echo.Echo) *echo.Echo {
 	e.POST("/pull", pull)
 	e.POST("/push", push)
 	e.POST("/build", build)
+	e.POST("/publish", publish)
 	return e
 }

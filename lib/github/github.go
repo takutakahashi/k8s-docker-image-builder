@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func Clone(repo string) string {
+func Clone(repo string) {
 	// クローンしてくる
 	os.RemoveAll(repo)
 	_, err := git.PlainClone(repo, false, &git.CloneOptions{
@@ -18,5 +18,4 @@ func Clone(repo string) string {
 		log.Print(err)
 		panic(err)
 	}
-	return "repo"
 }
