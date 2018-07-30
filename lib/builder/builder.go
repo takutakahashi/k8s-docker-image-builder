@@ -2,6 +2,7 @@ package builder
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/labstack/echo"
 	"github.com/mholt/archiver"
 	"github.com/rs/xid"
@@ -17,6 +18,11 @@ func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func resln(c echo.Context, line string) {
+	fmt.Fprintf(c.Response(), "%q", line)
+	c.Response().Flush()
 }
 
 func dirwalk(path string) []string {
@@ -41,17 +47,22 @@ func GetTarFile(c echo.Context) io.Reader {
 }
 
 func makeTar(repo string) io.Reader {
-	tarPath := "/tmp/" + xid.New().String() + ".tar"
-	fileList := dirwalk("/" + repo)
+	tarPath := xid.New().String() + ".tar"
+	fileList := dirwalk(repo)
 	archiver.Tar.Make(tarPath, fileList)
 	f, err := os.Open(tarPath)
+	defer os.RemoveAll(tarPath)
 	check(err)
 	return bufio.NewReader(f)
 }
 
 func BuildFromRepo(c echo.Context, repoName string, imageName string) string {
-	github.Clone(repoName)
-	tar := makeTar(repoName)
+	resln(c, "clone repo")
+	repoPath := github.Clone(repoName)
+	defer os.RemoveAll(repoPath)
+	resln(c, "making tar")
+	tar := makeTar(repoPath)
+	resln(c, "build start")
 	response := container.Build(c, tar, imageName)
 	return response
 }
