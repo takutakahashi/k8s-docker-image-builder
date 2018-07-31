@@ -29,7 +29,7 @@ func streamResponseToClient(c echo.Context, r io.ReadCloser) {
 			break
 		}
 		c.Response().Flush()
-		time.Sleep(1)
+		time.Sleep(1 * time.Second)
 	}
 }
 

@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func check(err error) {
@@ -21,7 +22,7 @@ func check(err error) {
 }
 
 func resln(c echo.Context, line string) {
-	fmt.Fprintf(c.Response(), "%q", line)
+	fmt.Fprintf(c.Response(), "%q\n", line)
 	c.Response().Flush()
 }
 
