@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-func Clone(repo string) string {
+func Clone(repo string, branch string) string {
 	sshKey, err := ioutil.ReadFile("/root/.ssh/id_rsa")
 	if err != nil {
 		log.Print(err)
@@ -27,7 +27,7 @@ func Clone(repo string) string {
 	repoPath := repo + xid.New().String()
 	_, err = git.PlainClone(repoPath, false, &git.CloneOptions{
 		URL:           fmt.Sprintf("ssh://git@github.com/%s", repo),
-		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", "master")),
+		ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", branch)),
 		SingleBranch:  true,
 		Progress:      os.Stdout,
 		Auth:          auth,

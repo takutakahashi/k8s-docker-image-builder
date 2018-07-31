@@ -24,8 +24,8 @@ func build(c echo.Context) error {
 }
 
 func publish(c echo.Context) error {
-	image, repo := c.FormValue("image"), c.FormValue("repo")
-	builder.BuildFromRepo(c, repo, image)
+	image, repo, branch := c.FormValue("image"), c.FormValue("repo"), c.FormValue("branch")
+	builder.BuildFromRepo(c, repo, branch, image)
 	builder.Push(c, image)
 	return nil
 }

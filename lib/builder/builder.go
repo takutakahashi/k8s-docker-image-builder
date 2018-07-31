@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 func check(err error) {
@@ -57,9 +56,9 @@ func makeTar(repo string) io.Reader {
 	return bufio.NewReader(f)
 }
 
-func BuildFromRepo(c echo.Context, repoName string, imageName string) string {
+func BuildFromRepo(c echo.Context, repoName string, branchName string, imageName string) string {
 	resln(c, "clone repo")
-	repoPath := github.Clone(repoName)
+	repoPath := github.Clone(repoName, branchName)
 	defer os.RemoveAll(repoPath)
 	resln(c, "making tar")
 	tar := makeTar(repoPath)
