@@ -25,15 +25,11 @@ func resln(c echo.Context, line string) {
 	c.Response().Flush()
 }
 
-func dirwalk(path string) []string {
+func getFileDirList(path string) []string {
 	files, err := ioutil.ReadDir(path)
 	check(err)
 	var paths []string
 	for _, file := range files {
-		if file.IsDir() {
-			paths = append(paths, dirwalk(filepath.Join(path, file.Name()))...)
-			continue
-		}
 		paths = append(paths, filepath.Join(path, file.Name()))
 	}
 
@@ -48,8 +44,7 @@ func GetTarFile(c echo.Context) io.Reader {
 
 func makeTar(repo string) io.Reader {
 	tarPath := xid.New().String() + ".tar"
-	fileList := dirwalk(repo)
-	archiver.Tar.Make(tarPath, fileList)
+	archiver.Tar.Make(tarPath, getFileDirList(repo))
 	f, err := os.Open(tarPath)
 	defer os.RemoveAll(tarPath)
 	check(err)
