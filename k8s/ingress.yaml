@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: builder
+spec:
+  tls:
+    - secretName: tls
+  rules:
+  - host: build.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: builder
+          servicePort: 8080

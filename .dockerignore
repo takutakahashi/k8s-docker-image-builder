@@ -1,0 +1,6 @@
+tmp/
+*.json
+*.tar
+id_rsa
+k8s
+.envrc
