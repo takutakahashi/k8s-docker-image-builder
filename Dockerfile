@@ -9,5 +9,5 @@ FROM google/cloud-sdk:slim
 COPY --from=builder /go/src/github.com/takutakahashi/k8s-docker-image-builder/k8s-docker-image-builder /kdib
 ADD start.sh /start.sh
 ADD ssh_config /root/.ssh/config
-ENV SSH_KNOWN_HOSTS=/known_hosts
+ENV TZ=Asia/Tokyo
 CMD '/start.sh'
