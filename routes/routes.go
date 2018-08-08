@@ -35,9 +35,11 @@ func build(c echo.Context) error {
 func publish(c echo.Context) error {
 	err := setResponseBase(c)
 	check(err)
-	image, repo, branch := c.FormValue("image"), c.FormValue("repo"), c.FormValue("branch")
-	builder.BuildFromRepo(c, repo, branch, image)
-	builder.Push(c, image)
+	go func(c echo.Context) {
+		image, repo, branch := c.FormValue("image"), c.FormValue("repo"), c.FormValue("branch")
+		builder.BuildFromRepo(repo, branch, image)
+		builder.Push(image)
+	}(c)
 	return nil
 }
 
@@ -53,7 +55,7 @@ func push(c echo.Context) error {
 	err := setResponseBase(c)
 	check(err)
 	image := c.FormValue("image")
-	builder.Push(c, image)
+	builder.Push(image)
 	return nil
 }
 

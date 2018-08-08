@@ -51,20 +51,20 @@ func makeTar(repo string) io.Reader {
 	return bufio.NewReader(f)
 }
 
-func BuildFromRepo(c echo.Context, repoName string, branchName string, imageName string) string {
-	resln(c, "clone repo")
+func BuildFromRepo(repoName string, branchName string, imageName string) string {
+	fmt.Println("clone repo")
 	repoPath := github.Clone(repoName, branchName)
 	defer os.RemoveAll(repoPath)
-	resln(c, "making tar")
+	fmt.Println("making tar")
 	tar := makeTar(repoPath)
-	resln(c, "build start")
-	response := container.Build(c, tar, imageName)
+	fmt.Println("build start")
+	response := container.Build(tar, imageName)
 	return response
 }
 
 func Build(c echo.Context, tar io.Reader, imageName string) string {
 	//github.Clone(repoName)
-	response := container.Build(c, tar, imageName)
+	response := container.Build(tar, imageName)
 	return response
 }
 
@@ -72,6 +72,6 @@ func Pull(c echo.Context, image string) {
 	container.Pull(c, image)
 }
 
-func Push(c echo.Context, image string) {
-	container.Push(c, image)
+func Push(image string) {
+	container.Push(image)
 }
