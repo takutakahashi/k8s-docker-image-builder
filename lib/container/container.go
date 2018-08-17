@@ -21,29 +21,28 @@ func check(err error) {
 	}
 }
 
-func streamResponseToClient(c echo.Context, r io.ReadCloser) {
+func streamResponseToStdout(r io.ReadCloser) {
 	for true {
-		n, _ := io.Copy(c.Response(), r)
+		n, _ := io.Copy(os.Stdout, r)
 		fmt.Printf("%d", n)
 		if n == 0 {
 			break
 		}
-		c.Response().Flush()
 		time.Sleep(1 * time.Second)
 	}
 }
 
 //https://kuroeveryday.blogspot.com/2017/09/golang-build-image-with-dockerfile.html
-func Build(c echo.Context, tar io.Reader, image string) string {
+func Build(tar io.Reader, image string) string {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	buildOpt := types.ImageBuildOptions{
 		PullParent: true,
 		Tags:       []string{image},
 	}
-	buildResponse, err := cli.ImageBuild(ctx, tar, buildOpt)
+	response, err := cli.ImageBuild(ctx, tar, buildOpt)
 	check(err)
-	streamResponseToClient(c, buildResponse.Body)
+	streamResponseToStdout(response.Body)
 	return "ok"
 }
 
@@ -54,17 +53,17 @@ func Pull(c echo.Context, image string) {
 	pullOpt := types.ImagePullOptions{RegistryAuth: auth}
 	response, err := cli.ImagePull(ctx, image, pullOpt)
 	check(err)
-	streamResponseToClient(c, response)
+	streamResponseToStdout(response)
 }
 
-func Push(c echo.Context, image string) {
+func Push(image string) {
 	ctx := context.Background()
 	cli, err := client.NewEnvClient()
 	auth := getEncodedAuthJSON(image)
 	pushOpt := types.ImagePushOptions{RegistryAuth: auth}
 	response, err := cli.ImagePush(ctx, image, pushOpt)
+	streamResponseToStdout(response)
 	check(err)
-	streamResponseToClient(c, response)
 }
 
 func getEncodedAuthJSON(image string) string {
