@@ -59,10 +59,17 @@ func push(c echo.Context) error {
 	return nil
 }
 
+func statusCheck(c echo.Context) error {
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusOK)
+	return nil
+}
+
 func Route(e *echo.Echo) *echo.Echo {
 	e.POST("/pull", pull)
 	e.POST("/push", push)
 	e.POST("/build", build)
 	e.POST("/publish", publish)
+	e.GET("/status", statusCheck)
 	return e
 }
