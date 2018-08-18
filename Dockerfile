@@ -10,5 +10,6 @@ COPY --from=builder /go/src/github.com/takutakahashi/k8s-docker-image-builder/k8
 ADD start.sh /start.sh
 ADD ssh_config /root/.ssh/config
 ENV TZ=Asia/Tokyo
+ENV DOCKER_API_VERSION=1.35
 ENV SSH_KNOWN_HOSTS=/known_hosts
 CMD '/start.sh'

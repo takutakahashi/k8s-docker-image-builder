@@ -1,7 +1,7 @@
 version: '2'
 services:
   builder:
-    image: takutakahashi/k8s-docker-image-builder:latest
+    build: .
     ports:
       - 8081:8080
     volumes:
