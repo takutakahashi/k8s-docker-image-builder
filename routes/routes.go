@@ -30,13 +30,6 @@ func closeChannel(key string) {
 	delete(chMap, key)
 }
 
-func del(key string) {
-}
-
-func get(key string) chan int {
-	return chMap[key]
-}
-
 func list() []string {
 	keys := reflect.ValueOf(chMap).MapKeys()
 	strkeys := make([]string, len(keys))
