@@ -6,12 +6,44 @@ import (
 	"github.com/takutakahashi/k8s-docker-image-builder/lib/auth"
 	"github.com/takutakahashi/k8s-docker-image-builder/lib/builder"
 	"net/http"
+	"reflect"
 )
 
 func check(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+var chMap map[string](chan int)
+
+func makeChannel(key string) chan int {
+	if chMap == nil {
+		chMap = map[string](chan int){}
+	}
+	chMap[key] = make(chan int)
+	return chMap[key]
+}
+
+func closeChannel(key string) {
+	close(chMap[key])
+	delete(chMap, key)
+}
+
+func del(key string) {
+}
+
+func get(key string) chan int {
+	return chMap[key]
+}
+
+func list() []string {
+	keys := reflect.ValueOf(chMap).MapKeys()
+	strkeys := make([]string, len(keys))
+	for i := 0; i < len(keys); i++ {
+		strkeys[i] = keys[i].String()
+	}
+	return strkeys
 }
 
 func setResponseBase(c echo.Context) error {
@@ -35,11 +67,13 @@ func build(c echo.Context) error {
 func publish(c echo.Context) error {
 	err := setResponseBase(c)
 	check(err)
-	go func(c echo.Context) {
-		image, repo, branch := c.FormValue("image"), c.FormValue("repo"), c.FormValue("branch")
+	image, repo, branch := c.FormValue("image"), c.FormValue("repo"), c.FormValue("branch")
+	ch := makeChannel(image)
+	go func(c echo.Context, ch chan int) {
 		builder.BuildFromRepo(repo, branch, image)
 		builder.Push(image)
-	}(c)
+		closeChannel(image)
+	}(c, ch)
 	return nil
 }
 
@@ -65,11 +99,18 @@ func statusCheck(c echo.Context) error {
 	return nil
 }
 
+func buildList(c echo.Context) error {
+	err := setResponseBase(c)
+	check(err)
+	return c.JSON(http.StatusOK, list())
+}
+
 func Route(e *echo.Echo) *echo.Echo {
 	e.POST("/pull", pull)
 	e.POST("/push", push)
 	e.POST("/build", build)
 	e.POST("/publish", publish)
 	e.GET("/status", statusCheck)
+	e.GET("/build/list", buildList)
 	return e
 }
