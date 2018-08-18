@@ -1,13 +1,17 @@
 package main
 
 import (
-	"github.com/labstack/echo"
-	"github.com/takutakahashi/k8s-docker-image-builder/routes"
 	"log"
+
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
+	"github.com/takutakahashi/k8s-docker-image-builder/routes"
 )
 
 func main() {
-	log.Fatal(routes.Route(echo.New()).Start(":8080"))
+	e := echo.New()
+	e.Use(middleware.Recover())
+	log.Fatal(routes.Route(e).Start(":8080"))
 }
 
 // check https://echo.labstack.com/cookbook/streaming-response
