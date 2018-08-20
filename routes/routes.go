@@ -31,6 +31,9 @@ func closeChannel(key string) {
 }
 
 func list() []string {
+	if chMap == nil {
+		chMap = map[string](chan int){}
+	}
 	keys := reflect.ValueOf(chMap).MapKeys()
 	strkeys := make([]string, len(keys))
 	for i := 0; i < len(keys); i++ {
@@ -40,7 +43,7 @@ func list() []string {
 }
 
 func setResponseBase(c echo.Context) error {
-	if !auth.Check(c.FormValue("token")) {
+	if !auth.Check(c.Request().Header.Get("Authentication")) && !auth.Check(c.FormValue("token")) {
 		c.Response().WriteHeader(http.StatusForbidden)
 		return fmt.Errorf("not authorized token")
 	}
@@ -103,7 +106,7 @@ func Route(e *echo.Echo) *echo.Echo {
 	e.POST("/push", push)
 	e.POST("/build", build)
 	e.POST("/publish", publish)
-	e.GET("/status", statusCheck)
 	e.GET("/build/list", buildList)
+	e.GET("/status", statusCheck)
 	return e
 }
