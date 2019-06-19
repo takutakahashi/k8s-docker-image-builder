@@ -38,6 +38,7 @@ func getFileDirList(path string) []string {
 func GetTarFile(c echo.Context) io.Reader {
 	recievedFile, err := c.FormFile("file")
 	f, err := recievedFile.Open()
+  fmt.Println(f)
 	check(err)
 	return bufio.NewReader(f)
 }
