@@ -56,7 +56,12 @@ func build(c echo.Context) error {
 	err := setResponseBase(c)
 	check(err)
 	image := c.FormValue("image")
-	builder.Build(c, builder.GetTarFile(c), image)
+	ch := makeChannel(image)
+	go func(c echo.Context, ch chan int) {
+	  builder.Build(c, builder.GetTarFile(c), image)
+		builder.Push(image)
+		closeChannel(image)
+	}(c, ch)
 	return nil
 }
 
