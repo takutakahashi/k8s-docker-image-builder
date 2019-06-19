@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/docker/cli/cli/config"
+	ctypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -67,13 +68,18 @@ func Push(image string) {
 }
 
 func getEncodedAuthJSON(image string) string {
+	authConfig := getAuthConfig(image)
+	encodedJSON, err := json.Marshal(authConfig)
+	check(err)
+	return base64.URLEncoding.EncodeToString(encodedJSON)
+}
+
+func getAuthConfig(image string) ctypes.AuthConfig {
 	named, err := reference.ParseNamed(image)
 	check(err)
 	hostname, _ := reference.SplitHostname(named)
 	configFile := config.LoadDefaultConfigFile(os.Stderr)
 	authConfig, err := configFile.GetAuthConfig(hostname)
 	check(err)
-	encodedJSON, err := json.Marshal(authConfig)
-	check(err)
-	return base64.URLEncoding.EncodeToString(encodedJSON)
+	return authConfig
 }
