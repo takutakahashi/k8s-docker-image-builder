@@ -44,7 +44,8 @@ func GetTarFile(c echo.Context) io.Reader {
 
 func makeTar(repo string) io.Reader {
 	tarPath := xid.New().String() + ".tar"
-	archiver.Tar.Make(tarPath, getFileDirList(repo))
+	tar := archiver.NewTar()
+	tar.Archive(getFileDirList(repo), tarPath)
 	f, err := os.Open(tarPath)
 	defer os.RemoveAll(tarPath)
 	check(err)
